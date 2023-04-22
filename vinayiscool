@@ -1,0 +1,49 @@
+-- First, create a part in the workspace to act as a teleporter
+local teleportPart = Instance.new("Part")
+teleportPart.Position = Vector3.new(0, 10, 0)
+teleportPart.Anchored = true
+teleportPart.Transparency = 1
+teleportPart.CanCollide = false
+teleportPart.Name = "TeleportPart"
+
+-- Create a function to handle the hat throwing
+local function throwHat(player)
+    local character = player.Character
+    if not character then return end -- make sure player has a character
+    local hat = character:FindFirstChildOfClass("Accessory")
+    if not hat then return end -- make sure player has a hat to throw
+    local hatClone = hat:Clone()
+    hatClone.Parent = workspace -- add the hat to the workspace
+    hat:Destroy() -- remove the original hat
+    local throwForce = Instance.new("BodyVelocity")
+    throwForce.Velocity = character.HumanoidRootPart.CFrame.LookVector * 100 -- adjust velocity as needed
+    throwForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    throwForce.P = 1000
+    throwForce.Parent = hatClone.PrimaryPart -- apply the force to the hat
+    wait(2) -- wait a bit before allowing another throw
+    throwForce:Destroy() -- remove the force
+end
+
+-- Bind the throwHat function to the "q" key
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.Q and not gameProcessed then
+        throwHat(game.Players.LocalPlayer)
+    end
+end)
+
+-- Create a function to handle the teleportation
+local function teleportToHat()
+    local hat = workspace:FindFirstChildOfClass("Accessory")
+    if not hat then return end -- make sure there's a hat to teleport to
+    local hatPart = hat.PrimaryPart
+    local teleportPos = hatPart.Position + Vector3.new(0, 5, 0) -- adjust position as needed
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPos) -- teleport the player
+end
+
+-- Create a GUI button to trigger the teleport function
+local teleportButton = Instance.new("TextButton")
+teleportButton.Parent = game.Players.LocalPlayer.PlayerGui
+teleportButton.Position = UDim2.new(0.5, -50, 0.9, -25)
+teleportButton.Size = UDim2.new(0, 100, 0, 50)
+teleportButton.Text = "Teleport"
+teleportButton.MouseButton1Click:Connect(teleportToHat)
